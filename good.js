@@ -1,47 +1,15 @@
 const Environment = require("./Environment");
 class Good {
-  constructor(
-    global = new Environment({
-      null: null,
-
-      true: true,
-      false: false,
-
-      VERSION: "0.0.1",
-    })
-  ) {
+  constructor(global = GlobalEnvironment) {
     this.global = global;
   }
 
   eval(exp, env = this.global) {
-    if (isNumber(exp)) {
+    if (this._isNumber(exp)) {
       return exp;
     }
-    if (isString(exp)) {
+    if (this._isString(exp)) {
       return exp.slice(1, -1);
-    }
-    if (exp[0] === "+") {
-      return this.eval(exp[1], env) + this.eval(exp[2], env);
-    }
-    if (exp[0] === "*") {
-      return this.eval(exp[1], env) * this.eval(exp[2], env);
-    }
-
-    // comparison
-    if (exp[0] === ">") {
-      return this.eval(exp[1], env) > this.eval(exp[2], env);
-    }
-    if (exp[0] === "<") {
-      return this.eval(exp[1], env) < this.eval(exp[2], env);
-    }
-    if (exp[0] === ">=") {
-      return this.eval(exp[1], env) >= this.eval(exp[2], env);
-    }
-    if (exp[0] === "<=") {
-      return this.eval(exp[1], env) <= this.eval(exp[2], env);
-    }
-    if (exp[0] === "==") {
-      return this.eval(exp[1], env) === this.eval(exp[2], env);
     }
 
     // Block:
@@ -82,8 +50,26 @@ class Good {
     }
 
     // Variable access: foo
-    if (isVariableName(exp)) {
+    if (this._isVariableName(exp)) {
       return env.lookup(exp);
+    }
+
+    /*
+     * Function call: (print "hello")
+     * (print "word")
+     * (+ x 5)
+     * (> foo bar)
+     */
+    if (Array.isArray(exp)) {
+      const fnName = this.eval(exp[0], env);
+      const args = exp.slice(1).map((arg) => this.eval(arg, env));
+
+      // native js function
+      if (typeof fnName === "function") {
+        return fnName(...args);
+      }
+
+      // user defined function
     }
 
     throw `unimplemented ${JSON.stringify(exp)}`;
@@ -93,18 +79,69 @@ class Good {
     const [_, ...exps] = exp; // ["begin", ...exps]
     return exps.reduce((_, exp) => this.eval(exp, env), null);
   }
+  _isNumber(exp) {
+    return typeof exp === "number";
+  }
+
+  _isString(exp) {
+    return typeof exp === "string" && exp[0] === '"' && exp.slice(-1) === '"';
+  }
+
+  _isVariableName(exp) {
+    return typeof exp === "string" && /^[=+\-*/><a-zA-Z0-9_]*$/.test(exp);
+  }
 }
 
-function isNumber(exp) {
-  return typeof exp === "number";
-}
+const GlobalEnvironment = new Environment({
+  null: null,
 
-function isString(exp) {
-  return typeof exp === "string" && exp[0] === '"' && exp.slice(-1) === '"';
-}
+  true: true,
+  false: false,
 
-function isVariableName(exp) {
-  return typeof exp === "string" && /^[a-zA-Z][a-zA-Z0-9_]*$/.test(exp);
-}
+  "+"(a, b) {
+    return a + b;
+  },
+
+  "*"(a, b) {
+    return a * b;
+  },
+
+  "-"(a, b = null) {
+    if (b == null) {
+      return -a;
+    }
+    return a - b;
+  },
+
+  "/"(a, b) {
+    return a / b;
+  },
+
+  "<"(a, b) {
+    return a < b;
+  },
+
+  ">"(a, b) {
+    return a > b;
+  },
+
+  "<="(a, b) {
+    return a <= b;
+  },
+
+  ">="(a, b) {
+    return a >= b;
+  },
+
+  "="(a, b) {
+    return a === b;
+  },
+
+  print(...args) {
+    console.log(...args);
+  },
+
+  VERSION: "0.0.1",
+});
 
 module.exports = Good;
