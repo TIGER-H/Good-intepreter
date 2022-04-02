@@ -55,4 +55,22 @@ module.exports = (g) => {
   `,
     133
   );
+
+  // recursive function
+  test(
+    g,
+    `
+    (begin
+      (def fact (n)
+        (if (= n 1)
+          1
+          (* n (fact (- n 1)))
+        )
+      )
+      
+      (fact 5)
+    )
+  `,
+    120
+  );
 };

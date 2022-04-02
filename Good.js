@@ -1,7 +1,10 @@
 const Environment = require("./Environment");
+const Trasnformer = require("./transform/Transformer");
+
 class Good {
   constructor(global = GlobalEnvironment) {
     this.global = global;
+    this._transformer = new Trasnformer();
   }
 
   eval(exp, env = this.global) {
@@ -60,10 +63,7 @@ class Good {
       syntactic sugar: (var square (lambda (x) (* x x)))
     */
     if (exp[0] === "def") {
-      const [_, name, params, body] = exp;
-
-      // JIT-transpile to a variable declaration
-      const varExp = ["var", name, ["lambda", params, body]];
+      const varExp = this._transformer.transformDefToVarLambda(exp);
 
       return this.eval(varExp, env);
       // const fn = {
@@ -73,6 +73,12 @@ class Good {
       // };
 
       // return env.define(name, fn);
+    }
+
+    if (exp[0] === "switch") {
+      const ifExp = this._transformer.transformSwitchToIf(exp);
+
+      return this.eval(ifExp, env);
     }
 
     /* lambda function: (lambda (x) (expr)) */

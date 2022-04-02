@@ -1,4 +1,4 @@
-const Good = require("../good");
+const Good = require("../Good");
 
 const tests = [
   require("./self-eval-test"),
@@ -10,6 +10,7 @@ const tests = [
   require("./built-in-function-test"),
   require("./user-defined-function-test"),
   require("./lambda-function-test"),
+  require("./switch-test"),
 ];
 
 const g = new Good();
