@@ -1,8 +1,9 @@
-import { assertStrictEquals } from "https://deno.land/std/testing/asserts.ts";
+const assert = require("assert");
+const testUtil = require("./test-util.js");
 
-export default (g: any) => {
+module.exports = (g) => {
   //block
-  assertStrictEquals(
+  assert.strictEqual(
     g.eval([
       "begin",
       ["var", "x", 1],
@@ -13,12 +14,12 @@ export default (g: any) => {
   );
 
   // outer x should not be affected
-  assertStrictEquals(
+  assert.strictEqual(
     g.eval(["begin", ["var", "x", 1], ["begin", ["var", "x", 2], "x"], "x"]),
     1
   );
 
-  assertStrictEquals(
+  assert.strictEqual(
     g.eval([
       "begin",
       ["var", "value", 1],
@@ -29,12 +30,25 @@ export default (g: any) => {
   );
 
   // assignment
-  assertStrictEquals(
+  assert.strictEqual(
     g.eval([
       "begin",
       ["var", "value", 1],
       ["begin", ["set", "value", 2], "value"],
     ]),
     2
+  );
+  
+  // better test
+  testUtil.test(
+    g,
+    `
+    (begin
+      (var x 1)
+      (var y 2)
+      (+ (* x y) 98)  
+    )
+  `,
+    100
   );
 };

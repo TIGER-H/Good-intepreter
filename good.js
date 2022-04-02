@@ -1,7 +1,5 @@
-import Environment from "./Environment.ts";
-
+const Environment = require("./Environment");
 class Good {
-  global: any;
   constructor(
     global = new Environment({
       null: null,
@@ -15,7 +13,7 @@ class Good {
     this.global = global;
   }
 
-  eval(exp: any, env = this.global): any {
+  eval(exp, env = this.global) {
     if (isNumber(exp)) {
       return exp;
     }
@@ -80,7 +78,7 @@ class Good {
       while (this.eval(condition, env)) {
         res = this.eval(body, env);
       }
-      return res;  
+      return res;
     }
 
     // Variable access: foo
@@ -91,22 +89,22 @@ class Good {
     throw `unimplemented ${JSON.stringify(exp)}`;
   }
 
-  _evalBlock(exp: any, env: any) {
+  _evalBlock(exp, env) {
     const [_, ...exps] = exp; // ["begin", ...exps]
-    return exps.reduce((_: never, exp: any) => this.eval(exp, env), null);
+    return exps.reduce((_, exp) => this.eval(exp, env), null);
   }
 }
 
-function isNumber(exp: any) {
+function isNumber(exp) {
   return typeof exp === "number";
 }
 
-function isString(exp: any) {
+function isString(exp) {
   return typeof exp === "string" && exp[0] === '"' && exp.slice(-1) === '"';
 }
 
-function isVariableName(exp: any) {
+function isVariableName(exp) {
   return typeof exp === "string" && /^[a-zA-Z][a-zA-Z0-9_]*$/.test(exp);
 }
 
-export default Good;
+module.exports = Good;

@@ -1,7 +1,7 @@
-import { assertStrictEquals } from "https://deno.land/std/testing/asserts.ts";
+const assert = require("assert");
 
-export default (g: any) => {
-  assertStrictEquals(
+module.exports = (g) => {
+  assert.strictEqual(
     g.eval([
       "begin",
       ["var", "cnt", 0],
