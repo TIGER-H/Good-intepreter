@@ -7,6 +7,10 @@ class Good {
     this._transformer = new Trasnformer();
   }
 
+  evalGlobal(exp) {
+    return this._evalBlock(["block", exp], this.global);
+  }
+
   eval(exp, env = this.global) {
     if (this._isNumber(exp)) {
       return exp;

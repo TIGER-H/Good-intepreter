@@ -5,9 +5,6 @@ module.exports = (g) => {
   test(
     g,
     `
-    (
-      begin
-
       (class Point null
         (begin
         (def constructor (this x y)
@@ -18,7 +15,6 @@ module.exports = (g) => {
           (+ (prop this x) (prop this y)))))
           (var p (new Point 10 20))
           ((prop p calc) p)
-    )
   `,
     30
   );
