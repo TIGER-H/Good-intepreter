@@ -158,6 +158,12 @@ class Good {
       return env.define(name, classEnv);
     }
 
+    /* super exp: (super <clasName>) */
+    if (exp[0] === "super") {
+      const [_, className] = exp;
+      return this.eval(className, env).parent;
+    }
+
     /* class instantiation: (new <class> <args>...) */
     /* a class is an environment! */
     if (exp[0] === "new") {
