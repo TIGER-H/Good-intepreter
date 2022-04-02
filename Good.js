@@ -201,7 +201,10 @@ class Good {
       return env.define(name, moduleEnv);
     }
 
-    /* import module */
+    /* import module: (import <name>) */
+    /* TODO1: cache layer */
+    /* TODO2: (import (export1, export2, ...) <name>) */
+    /* TODO3: implementation layer and API layer, hide inner implementation from user */
     if (exp[0] === "import") {
       const [_, moduleName] = exp;
 
