@@ -28,9 +28,22 @@ class Good {
     }
 
     // Variable update: (set foo 10)
+    /* OR property access(write): (set (prop <instance> <name>)) */
     if (exp[0] === "set") {
-      const [_, name, value] = exp;
-      return env.assign(name, this.eval(value, env));
+      const [_, ref, value] = exp;
+
+      if (ref[0] === "prop") {
+        // property access
+        const [_, instance, propName] = ref;
+        const instanceEnv = this.eval(instance, env);
+
+        return instanceEnv.define(propName, this.eval(value, env));
+      }
+
+      // variable update
+      // assignment may affect variables from the outer environment,
+      // will lookup environment chain.
+      return env.assign(ref, this.eval(value, env));
     }
 
     // if-expr
@@ -129,6 +142,42 @@ class Good {
       };
     }
 
+    /* class declaration: (class <Name> <Parent> <Body>) */
+    if (exp[0] === "class") {
+      const [_, name, parent, body] = exp;
+      const parentEnv = this.eval(parent, env) || env;
+
+      const classEnv = new Environment({}, parentEnv);
+
+      this._evalBody(body, classEnv);
+
+      return env.define(name, classEnv);
+    }
+
+    /* class instantiation: (new <class> <args>...) */
+    /* a class is an environment! */
+    if (exp[0] === "new") {
+      const classEnv = this.eval(exp[1], env);
+      const instanceEnv = new Environment({}, classEnv);
+      const args = exp.slice(2).map((arg) => this.eval(arg, env));
+
+      this._callUserDefinedFunction(classEnv.lookup("constructor"), [
+        instanceEnv, // as self/this
+        ...args,
+      ]);
+
+      return instanceEnv;
+    }
+
+    /* property access(read): (prop <instance> <name>) */
+    /* property access(write): (set (prop <instance> <name>)) */
+    if (exp[0] === "prop") {
+      const [_, instance, name] = exp;
+      const instanceEnv = this.eval(instance, env);
+
+      return instanceEnv.lookup(name);
+    }
+
     /*
       Function call: (print "hello")
       (print "word")
@@ -148,21 +197,25 @@ class Good {
         - new activation environment
         - parent link to captured environment
       */
-      const acitvationRecord = {};
-
-      fn.params.forEach((param, index) => {
-        acitvationRecord[param] = args[index];
-      });
-
-      const activationEnv = new Environment(
-        acitvationRecord,
-        fn.env // static scope; env -> dynamic scope
-      );
-
-      return this._evalBody(fn.body, activationEnv);
+      return this._callUserDefinedFunction(fn, args);
     }
 
     throw `unimplemented ${JSON.stringify(exp)}`;
+  }
+
+  _callUserDefinedFunction(fn, args) {
+    const acitvationRecord = {};
+
+    fn.params.forEach((param, index) => {
+      acitvationRecord[param] = args[index];
+    });
+
+    const activationEnv = new Environment(
+      acitvationRecord,
+      fn.env // static scope; env -> dynamic scope
+    );
+
+    return this._evalBody(fn.body, activationEnv);
   }
 
   _evalBody(body, env) {
