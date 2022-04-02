@@ -52,6 +52,13 @@ class Good {
       return res;
     }
 
+    // for-loop
+    if (exp[0] === "for") {
+      const whileExp = this._transformer.transformForToWhile(exp);
+
+      return this.eval(whileExp, env);
+    }
+
     // Variable access: foo
     if (this._isVariableName(exp)) {
       return env.lookup(exp);

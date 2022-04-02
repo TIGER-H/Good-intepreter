@@ -6,6 +6,7 @@ class Trasnformer {
     return ["var", name, ["lambda", params, body]];
   }
 
+  // transform to nested if-expressions
   transformSwitchToIf(switchExp) {
     const [_, ...cases] = switchExp;
     const ifExp = ["if", null, null, null];
@@ -22,10 +23,17 @@ class Trasnformer {
 
       current[3] = nextCondition === "else" ? nextBlock : ["if"];
       current = current[3];
+      console.log(typeof current, current);
       console.log(JSON.stringify(ifExp));
     }
 
     return ifExp;
+  }
+
+  transformForToWhile(forExp) {
+    const [_, init, condition, modifier, block] = forExp;
+
+    return ["begin", init, ["while", condition, ["begin", modifier, block]]];
   }
 }
 
