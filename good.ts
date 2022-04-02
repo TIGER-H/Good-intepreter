@@ -29,6 +29,23 @@ class Good {
       return this.eval(exp[1], env) * this.eval(exp[2], env);
     }
 
+    // comparison
+    if (exp[0] === ">") {
+      return this.eval(exp[1], env) > this.eval(exp[2], env);
+    }
+    if (exp[0] === "<") {
+      return this.eval(exp[1], env) < this.eval(exp[2], env);
+    }
+    if (exp[0] === ">=") {
+      return this.eval(exp[1], env) >= this.eval(exp[2], env);
+    }
+    if (exp[0] === "<=") {
+      return this.eval(exp[1], env) <= this.eval(exp[2], env);
+    }
+    if (exp[0] === "==") {
+      return this.eval(exp[1], env) === this.eval(exp[2], env);
+    }
+
     // Block:
     if (exp[0] === "begin") {
       const blockEnv = new Environment({}, env);
@@ -45,6 +62,25 @@ class Good {
     if (exp[0] === "set") {
       const [_, name, value] = exp;
       return env.assign(name, this.eval(value, env));
+    }
+
+    // if-expr
+    if (exp[0] === "if") {
+      const [_, condition, then, else_] = exp;
+      if (this.eval(condition, env)) {
+        return this.eval(then, env);
+      }
+      return this.eval(else_, env);
+    }
+
+    // while-expr
+    if (exp[0] === "while") {
+      const [_, condition, body] = exp;
+      let res;
+      while (this.eval(condition, env)) {
+        res = this.eval(body, env);
+      }
+      return res;  
     }
 
     // Variable access: foo
