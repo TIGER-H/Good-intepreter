@@ -6,7 +6,7 @@ const tests = [
   require("./variables-test"),
   require("./block-test"),
   require("./if-test"),
-  require("./while-test"),
+  require("./while-for-test"),
   require("./built-in-function-test"),
   require("./user-defined-function-test"),
   require("./lambda-function-test"),

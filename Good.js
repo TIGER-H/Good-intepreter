@@ -59,6 +59,37 @@ class Good {
       return this.eval(whileExp, env);
     }
 
+    // (++/--/+=/-= foo)
+    // syntactic sugar for (set foo (+ foo 1))
+    if (exp[0] === "++") {
+      const setExp = this._transformer.transformIncrementToSet(exp);
+
+      return this.eval(setExp, env);
+    }
+    if (exp[0] === "--") {
+      const setExp = this._transformer.transformDecrementToSet(exp);
+
+      return this.eval(setExp, env);
+    }
+
+    // += foo inc
+    // syntactic sugar for (set foo (+ foo inc))
+    if (exp[0] === "+=") {
+      const [_, varName, inc] = exp;
+      const setExp = ["set", varName, ["+", varName, this.eval(inc, env)]];
+
+      return this.eval(setExp, env);
+    }
+
+    // -= foo dec
+    // syntactic sugar for (set foo (- foo dec))
+    if (exp[0] === "-=") {
+      const [_, varName, dec] = exp;
+      const setExp = ["set", varName, ["-", varName, this.eval(dec, env)]];
+
+      return this.eval(setExp, env);
+    }
+
     // Variable access: foo
     if (this._isVariableName(exp)) {
       return env.lookup(exp);

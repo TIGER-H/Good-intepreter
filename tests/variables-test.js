@@ -1,4 +1,6 @@
 const assert = require("assert");
+const { test } = require("./test-util");
+
 module.exports = (g) => {
   // variable
 
@@ -8,6 +10,25 @@ module.exports = (g) => {
   assert.strictEqual(g.eval("y"), 100);
   assert.strictEqual(g.eval(["var", "z", ["+", "x", "y"]]), 101);
   assert.strictEqual(g.eval("z"), 101);
+
+  // ++ / -- / += / -=
+  test(
+    g,
+    `
+    (
+      begin
+
+      (var x 0)
+      (++ x)
+      (++ x)
+      (-- x)
+      (+= x 2)
+      (-= x 2)
+      x
+    )
+  `,
+    1
+  );
 
   // default value
   assert.strictEqual(g.eval("true"), true);

@@ -23,8 +23,6 @@ class Trasnformer {
 
       current[3] = nextCondition === "else" ? nextBlock : ["if"];
       current = current[3];
-      console.log(typeof current, current);
-      console.log(JSON.stringify(ifExp));
     }
 
     return ifExp;
@@ -34,6 +32,16 @@ class Trasnformer {
     const [_, init, condition, modifier, block] = forExp;
 
     return ["begin", init, ["while", condition, ["begin", modifier, block]]];
+  }
+
+  transformIncrementToSet(incrementExp) {
+    const [_, varName] = incrementExp;
+    return ["set", varName, ["+", varName, 1]];
+  }
+
+  transformDecrementToSet(decrementExp) {
+    const [_, varName] = decrementExp;
+    return ["set", varName, ["-", varName, 1]];
   }
 }
 
