@@ -8,7 +8,7 @@ class Good {
   }
 
   evalGlobal(exp) {
-    return this._evalBlock(["block", exp], this.global);
+    return this._evalBody(exp, this.global);
   }
 
   eval(exp, env = this.global) {
@@ -186,6 +186,18 @@ class Good {
       const instanceEnv = this.eval(instance, env);
 
       return instanceEnv.lookup(name);
+    }
+
+    /* module declaration: (module <name> <body>) */
+    if (exp[0] === "module") {
+      const [_, name, body] = exp;
+
+      // create an environment for the module
+      const moduleEnv = new Environment({}, env);
+
+      this._evalBody(body, moduleEnv);
+
+      return env.define(name, moduleEnv);
     }
 
     /*

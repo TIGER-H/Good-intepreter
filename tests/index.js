@@ -12,6 +12,7 @@ const tests = [
   require("./lambda-function-test"),
   require("./switch-test"),
   require("./class-test"),
+  require("./module-test"),
 ];
 
 const g = new Good();
