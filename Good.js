@@ -1,6 +1,7 @@
+const { readFileSync } = require("fs");
 const Environment = require("./Environment");
 const Trasnformer = require("./transform/Transformer");
-
+const goodParser = require("./parser/goodParser");
 class Good {
   constructor(global = GlobalEnvironment) {
     this.global = global;
@@ -198,6 +199,23 @@ class Good {
       this._evalBody(body, moduleEnv);
 
       return env.define(name, moduleEnv);
+    }
+
+    /* import module */
+    if (exp[0] === "import") {
+      const [_, moduleName] = exp;
+
+      // read file
+      const moduleSrc = readFileSync(
+        `${__dirname}/module/${moduleName}.tg`,
+        "utf-8"
+      );
+      // parse file
+      const body = goodParser.parse(`(begin ${moduleSrc})`);
+      // to Exp
+      const moduleExp = ["module", moduleName, body];
+      // eval module
+      return this.eval(moduleExp, this.global);
     }
 
     /*

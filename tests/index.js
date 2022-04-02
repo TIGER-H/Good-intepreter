@@ -13,6 +13,7 @@ const tests = [
   require("./switch-test"),
   require("./class-test"),
   require("./module-test"),
+  require("./import-test"),
 ];
 
 const g = new Good();
