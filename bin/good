@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+"use strict";
+
+const fs = require("fs");
+const goodParser = require("../parser/goodParser");
+const Good = require("../Good");
+
+function evalGlobal(src, good) {
+  const exp = goodParser.parse(`(begin ${src})`);
+  return good.evalGlobal(exp);
+}
+
+function main(argv) {
+  const [_node, _path, mode, exp] = argv;
+
+  const good = new Good();
+
+  if (mode === "-e") {
+    return evalGlobal(exp, good);
+  }
+
+  if (mode === "-f") {
+    const src = fs.readFileSync(exp, "utf8");
+    return evalGlobal(src, good);
+  }
+}
+
+main(process.argv);
