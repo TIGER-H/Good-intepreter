@@ -54,25 +54,78 @@ class Good {
       return env.lookup(exp);
     }
 
+    /* 
+      function declaration: (def foo (x) (* x x))
+
+      syntactic sugar: (var square (lambda (x) (* x x)))
+    */
+    if (exp[0] === "def") {
+      const [_, name, params, body] = exp;
+
+      // JIT-transpile to a variable declaration
+      const varExp = ["var", name, ["lambda", params, body]];
+
+      return this.eval(varExp, env);
+      // const fn = {
+      //   params,
+      //   body,
+      //   env, // closure
+      // };
+
+      // return env.define(name, fn);
+    }
+
+    /* lambda function: (lambda (x) (expr)) */
+    if (exp[0] === "lambda") {
+      const [_, params, body] = exp;
+      return {
+        params,
+        body,
+        env,
+      };
+    }
+
     /*
-     * Function call: (print "hello")
-     * (print "word")
-     * (+ x 5)
-     * (> foo bar)
-     */
+      Function call: (print "hello")
+      (print "word")
+      (+ x 5)
+      (> foo bar)
+    */
     if (Array.isArray(exp)) {
-      const fnName = this.eval(exp[0], env);
+      const fn = this.eval(exp[0], env);
       const args = exp.slice(1).map((arg) => this.eval(arg, env));
 
       // native js function
-      if (typeof fnName === "function") {
-        return fnName(...args);
+      if (typeof fn === "function") {
+        return fn(...args);
       }
 
-      // user defined function
+      /*  user defined function
+        - new activation environment
+        - parent link to captured environment
+      */
+      const acitvationRecord = {};
+
+      fn.params.forEach((param, index) => {
+        acitvationRecord[param] = args[index];
+      });
+
+      const activationEnv = new Environment(
+        acitvationRecord,
+        fn.env // static scope; env -> dynamic scope
+      );
+
+      return this._evalBody(fn.body, activationEnv);
     }
 
     throw `unimplemented ${JSON.stringify(exp)}`;
+  }
+
+  _evalBody(body, env) {
+    if (body[0] === "begin") {
+      return this._evalBlock(body, env);
+    }
+    return this.eval(body, env);
   }
 
   _evalBlock(exp, env) {
